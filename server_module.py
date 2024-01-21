@@ -27,10 +27,10 @@ def receive_text(client_socket: socket.socket) -> str:
         message += package
         length -= len(package)
 
-    return message.decode('utf-8')
+    return message.decode("utf-8")
 
 
-def send_file(client_socket: socket.socket, file_path:str):
+def send_file(client_socket: socket.socket, file_path: str):
     file_path = os.path.expanduser(file_path)
 
     encoded_file = fhm.file_encode(file_path)
@@ -41,10 +41,10 @@ def send_file(client_socket: socket.socket, file_path:str):
         client_socket.send(package)
 
 
-def receive_file(client_socket: socket.socket, file_path: str):
+def receive_file(client_socket: socket.socket, file_path: str | None):
     metadata = fhm.get_file_metadata(client_socket)
 
-    file_path = os.path.expanduser(file_path or '.')
+    file_path = os.path.expanduser(file_path or ".")
     file_name = metadata["file_name"]
     full_name = os.path.join(file_path, file_name)
 
@@ -71,5 +71,5 @@ def delete_file(file_path: str):
 
 
 def change_directory(file_path: str):
-    file_path = os.path.expanduser(file_path or '~/')
+    file_path = os.path.expanduser(file_path or "~/")
     os.chdir(file_path)

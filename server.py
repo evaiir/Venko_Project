@@ -4,7 +4,7 @@ import file_handling_module as fhm
 import server_module as sm
 
 # Server configuration.
-host = str(socket.INADDR_ANY) # Bind to any interface
+host = str(socket.INADDR_ANY)  # Bind to any interface
 port = 8080
 
 # Create a socket object.

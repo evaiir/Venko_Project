@@ -1,11 +1,12 @@
 import json
-import socket
 import os
+import socket
 from pathlib import Path
 from typing import Dict
 
+
 def tree_list_content(directory: str) -> str:
-    directory = os.path.expanduser(directory or '.')
+    directory = os.path.expanduser(directory or ".")
 
     # Tree function lightly adapted from https://stackoverflow.com/a/59109706
     # prefix components:
@@ -14,6 +15,7 @@ def tree_list_content(directory: str) -> str:
     # pointers:
     tee = "├── "
     last = "└── "
+
     def tree(dir_path: Path, prefix: str = ""):
         """
         A recursive generator, given a directory Path object
@@ -42,8 +44,8 @@ def list_content(directory: str) -> str:
     """
     Mimics the output of the 'ls' command from the terminal. Return it as a string.
     """
-    directory = os.path.expanduser(directory or '.')
-    string = ''
+    directory = os.path.expanduser(directory or ".")
+    string = ""
     for line in os.listdir(directory):
         string += line + "\n"
     return string
@@ -68,7 +70,7 @@ def file_encode(file_path: str) -> bytes:
             file_data = file.read()
 
     file_info["file_len"] = len(file_data)
-    metadata_bytes = json.dumps(file_info).encode('utf-8')
+    metadata_bytes = json.dumps(file_info).encode("utf-8")
     metadata_length_bytes = len(metadata_bytes).to_bytes(4)
     encoded_file = metadata_length_bytes + metadata_bytes + file_data
 

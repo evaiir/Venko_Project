@@ -1,7 +1,7 @@
 import socket
 
-import server_module as sm
 import client_module as cm
+import server_module as sm
 
 # Server configuration
 host = "192.168.1.4"
@@ -34,8 +34,9 @@ while True:
             message = sm.receive_text(client_socket)
             print(message)
         case "/upload":
-            cm.send_request(client_socket, command_type, arg2)
-            sm.send_file(client_socket, arg1)
+            if arg1:
+                cm.send_request(client_socket, command_type, arg2)
+                sm.send_file(client_socket, arg1)
         case "/download":
             cm.send_request(client_socket, command_type, arg1)
             sm.receive_file(client_socket, arg2)
