@@ -1,29 +1,23 @@
-"""
-TODO:
-    - fix cd function unexpected behavior when no argument is passed and server and client are not
-      in the same computer.
-"""
-
 import os
+import socket
 
 import file_handling_module as fhm
 
 
-def receive_request(client_socket):
+def receive_request(client_socket: socket.socket) -> list:
     request = receive_text(client_socket)
     return request.split()
 
 
 # Wrapper to handle text communication through the network
-def send_text(client_socket, message):
+def send_text(client_socket: socket.socket, message: str):
     package = fhm.text_message_encode(message)
 
     # Send the actual message
     client_socket.sendall(package)
 
 
-def receive_text(client_socket):
-    # Receive the length of the message
+def receive_text(client_socket: socket.socket) -> str:
     length_bytes = client_socket.recv(4)
     length = int.from_bytes(length_bytes)
 
@@ -33,10 +27,10 @@ def receive_text(client_socket):
         message += package
         length -= len(package)
 
-    return message.decode()
+    return message.decode('utf-8')
 
 
-def send_file(client_socket, file_path):
+def send_file(client_socket: socket.socket, file_path:str):
     file_path = os.path.expanduser(file_path)
 
     encoded_file = fhm.file_encode(file_path)
@@ -47,7 +41,7 @@ def send_file(client_socket, file_path):
         client_socket.send(package)
 
 
-def receive_file(client_socket, file_path):
+def receive_file(client_socket: socket.socket, file_path: str):
     metadata = fhm.get_file_metadata(client_socket)
 
     file_path = os.path.expanduser(file_path or '.')
@@ -55,9 +49,6 @@ def receive_file(client_socket, file_path):
     full_name = os.path.join(file_path, file_name)
 
     length = metadata["file_len"]
-    print("teste: ")
-    print(file_name)
-    print(metadata)
 
     try:
         file = open(full_name, "wb")
@@ -74,11 +65,11 @@ def receive_file(client_socket, file_path):
     print(f"File '{file_name}' received successfully.")
 
 
-def delete_file(file_path):
+def delete_file(file_path: str):
     file_path = os.path.expanduser(file_path)
     os.remove(file_path)
 
 
-def change_directory(file_path):
-    file_path = os.path.expanduser(file_path or '~')
+def change_directory(file_path: str):
+    file_path = os.path.expanduser(file_path or '~/')
     os.chdir(file_path)
