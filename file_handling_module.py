@@ -1,8 +1,10 @@
 import json
+import socket
 import os
 from pathlib import Path
+from typing import Dict
 
-def tree_list_content(directory):
+def tree_list_content(directory: str) -> str:
     directory = os.path.expanduser(directory or '.')
 
     # Tree function lightly adapted from https://stackoverflow.com/a/59109706
@@ -36,7 +38,7 @@ def tree_list_content(directory):
     return string
 
 
-def list_content(directory):
+def list_content(directory: str) -> str:
     """
     Mimics the output of the 'ls' command from the terminal. Return it as a string.
     """
@@ -47,7 +49,7 @@ def list_content(directory):
     return string
 
 
-def file_encode(file_path):
+def file_encode(file_path: str) -> bytes:
     """
     Receives a file with full path and returns a binary containing the length of the file name, the file
     name, the length of the file and the file concatenated.
@@ -73,7 +75,7 @@ def file_encode(file_path):
     return encoded_file
 
 
-def get_file_metadata(client_socket):
+def get_file_metadata(client_socket: socket.socket) -> Dict:
     """
     Receives the file name and both length informations from the buffer and return them to the function,
     so the caller can handle the file binaries.
@@ -89,15 +91,15 @@ def get_file_metadata(client_socket):
     return file_metadata
 
 
-def text_message_encode(message):
+def text_message_encode(message: str) -> bytes:
     """
     Receives a string and returns its length and the encoded string to the caller can handle sending
     text through the network.
     """
-    message = message.encode("utf-8")
-    text_len = len(message)
+    message_bytes = message.encode("utf-8")
+    text_len = len(message_bytes)
 
     binary_data = text_len.to_bytes(4)
-    binary_data += message
+    binary_data += message_bytes
 
     return binary_data
