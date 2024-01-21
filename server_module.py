@@ -14,23 +14,9 @@ def receive_request(client_socket):
     return request.split()
 
 
-def receive_file(client_socket, file_path):
-    file_path = os.path.expanduser(file_path or '.')
-    file_name, length = fhm.get_file_metadata(client_socket)
-    full_name = os.path.join(file_path, file_name)
-
-    with open(full_name, "wb") as file:
-        while length:
-            package = client_socket.recv(min(1024, length))
-            file.write(package)
-            length -= len(package)
-
-    print(f"File '{file_name}' received successfully.")
-
-
 # Wrapper to handle text communication through the network
 def send_text(client_socket, message):
-    package = fhm.text_encode(message)
+    package = fhm.text_message_encode(message)
 
     # Send the actual message
     client_socket.sendall(package)
@@ -53,12 +39,39 @@ def receive_text(client_socket):
 def send_file(client_socket, file_path):
     file_path = os.path.expanduser(file_path)
 
-    file_bin = fhm.file_encode(file_path)
+    encoded_file = fhm.file_encode(file_path)
 
     # Send file content
-    for i in range(0, len(file_bin), 1024):
-        package = file_bin[i : i + 1024]
+    for i in range(0, len(encoded_file), 1024):
+        package = encoded_file[i : i + 1024]
         client_socket.send(package)
+
+
+def receive_file(client_socket, file_path):
+    metadata = fhm.get_file_metadata(client_socket)
+
+    file_path = os.path.expanduser(file_path or '.')
+    file_name = metadata["file_name"]
+    full_name = os.path.join(file_path, file_name)
+
+    length = metadata["file_len"]
+    print("teste: ")
+    print(file_name)
+    print(metadata)
+
+    try:
+        file = open(full_name, "wb")
+    except PermissionError:
+        print(f"You don't have permission to read {file_name}.")
+        return
+    else:
+        with file:
+            while length:
+                package = client_socket.recv(min(1024, length))
+                file.write(package)
+                length -= len(package)
+
+    print(f"File '{file_name}' received successfully.")
 
 
 def delete_file(file_path):

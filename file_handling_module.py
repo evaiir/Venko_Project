@@ -1,18 +1,11 @@
-"""
-TODO:
-    - enhance the file and text structure to send them in a more organized form.
-"""
-
-
+import json
 import os
 from pathlib import Path
 
 def tree_list_content(directory):
     directory = os.path.expanduser(directory or '.')
 
-    """
-    Tree function lightly adapted from https://stackoverflow.com/a/59109706
-    """
+    # Tree function lightly adapted from https://stackoverflow.com/a/59109706
     # prefix components:
     space = "    "
     branch = "│   "
@@ -43,8 +36,10 @@ def tree_list_content(directory):
     return string
 
 
-# Mimics the output of the 'ls' command from the terminal. Return it as a string.
 def list_content(directory):
+    """
+    Mimics the output of the 'ls' command from the terminal. Return it as a string.
+    """
     directory = os.path.expanduser(directory or '.')
     string = ''
     for line in os.listdir(directory):
@@ -52,54 +47,57 @@ def list_content(directory):
     return string
 
 
-"""
-Receives a file with full path and returns a binary containing the length of the file name, the file
-name, the length of the file and the file concatenated.
-"""
 def file_encode(file_path):
-    file_name = os.path.basename(file_path)
-    name_len = len(file_name)
+    """
+    Receives a file with full path and returns a binary containing the length of the file name, the file
+    name, the length of the file and the file concatenated.
+    """
+    file_info = {}
+    file_info["file_name"] = os.path.basename(file_path)
+    file_info["permissions"] = os.stat(file_path).st_mode
 
-    binary = name_len.to_bytes(4)
-    binary += file_name.encode("utf-8")
+    try:
+        file = open(file_path, "rb")
+    except PermissionError:
+        print(f"You don't have permission to read {file_info['file_name']}.")
+        raise
+    else:
+        with file:
+            file_data = file.read()
 
-    with open(file_path, "rb") as file:
-        file_binary = file.read()
+    file_info["file_len"] = len(file_data)
+    metadata_bytes = json.dumps(file_info).encode('utf-8')
+    metadata_length_bytes = len(metadata_bytes).to_bytes(4)
+    encoded_file = metadata_length_bytes + metadata_bytes + file_data
 
-    file_len = len(file_binary)
-
-    binary += file_len.to_bytes(4)
-    binary += file_binary
-
-    return binary
+    return encoded_file
 
 
-"""
-Receives the file name and both length informations from the buffer and return them to the function,
-so the caller can handle the file binaries.
-"""
 def get_file_metadata(client_socket):
-    name_len_b = client_socket.recv(4)
-    name_len = int.from_bytes(name_len_b)
+    """
+    Receives the file name and both length informations from the buffer and return them to the function,
+    so the caller can handle the file binaries.
+    """
+    dict_len_b = client_socket.recv(4)
+    dict_len = int.from_bytes(dict_len_b)
+    print(f"DICT TESTE: {dict_len}")
 
-    file_name_b = client_socket.recv(name_len)
-    file_name = file_name_b.decode("utf-8")
+    encoded_file = client_socket.recv(dict_len)
+    print(encoded_file)
+    file_metadata = json.loads(encoded_file)
 
-    file_len_b = client_socket.recv(4)
-    file_length = int.from_bytes(file_len_b)
-
-    return file_name, file_length
+    return file_metadata
 
 
-"""
-Receives a string and returns its length and the encoded string to the caller can handle sending
-text through the network.
-"""
-def text_encode(message):
+def text_message_encode(message):
+    """
+    Receives a string and returns its length and the encoded string to the caller can handle sending
+    text through the network.
+    """
     message = message.encode("utf-8")
     text_len = len(message)
 
-    binary = text_len.to_bytes(4)
-    binary += message
+    binary_data = text_len.to_bytes(4)
+    binary_data += message
 
-    return binary
+    return binary_data
