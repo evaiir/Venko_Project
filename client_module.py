@@ -1,4 +1,7 @@
+import socket
+
 import file_handling_module as fhm
+
 
 def print_help():
     print(
@@ -29,9 +32,9 @@ def print_help():
     print()
 
 
-def send_request(client_socket, command, opt_arg):
+def send_request(client_socket: socket.socket, command: str, opt_arg: str | None):
     message = command
     if opt_arg:
         message += " " + opt_arg
-    package = fhm.text_encode(message)
+    package = fhm.text_message_encode(message)
     client_socket.sendall(package)
