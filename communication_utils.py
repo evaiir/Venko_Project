@@ -1,6 +1,7 @@
 import os
 import socket
 import tarfile
+import time
 
 import file_utils as f_utils
 
@@ -45,9 +46,9 @@ def send_file(client_socket: socket.socket, file_path: str):
     if file_path.endswith(".tar.gz"):
         f_utils.delete_file(file_path)
         file_path = file_path[:-7]  # Removes the ".tar.gz" from the name
-        print(f"Directory '{file_path}' sended successfully.")
+        timestamped_print(f"Directory '{file_path}' sended successfully.")
     else:
-        print(f"File '{file_path}' sended successfully.")
+        timestamped_print(f"File '{file_path}' sended successfully.")
 
 
 def receive_file(client_socket: socket.socket, file_path: str | None):
@@ -62,8 +63,8 @@ def receive_file(client_socket: socket.socket, file_path: str | None):
     try:
         file = open(full_name, "wb")
     except PermissionError:
-        print(f"You don't have permission to create/write on {file_name}.")
-        return
+        timestamped_print(f"You don't have permission to create/write on {file_name}.")
+        raise
     else:
         with file:
             while length:
@@ -77,6 +78,13 @@ def receive_file(client_socket: socket.socket, file_path: str | None):
             tar.extractall(os.curdir)
         f_utils.delete_file(file_name)
         file_name = file_name[:-7]  # Removes the ".tar.gz" from the name
-        print(f"Directory '{file_name}' received successfully.")
+        timestamped_print(f"Directory '{file_name}' received successfully.")
     else:
-        print(f"File '{file_name}' received successfully.")
+        timestamped_print(f"File '{file_name}' received successfully.")
+
+
+def timestamped_print(message: str) -> str:
+    t = time.time()
+    timestamp = "[" + time.strftime('%Y-%m-%d %H:%M', time.localtime(t)) + "]"
+    timestamped_message = timestamp + " - " + message
+    print(timestamped_message)
