@@ -1,6 +1,7 @@
 import socket
 
 import file_utils as f_utils
+import communication_utils as comm_utils
 
 
 def print_help():
@@ -46,9 +47,17 @@ def send_request(client_socket: socket.socket, command: str, opt_arg: str | None
     client_socket.sendall(package)
 
 
-def validate_command(command: str, file: str | None) -> bool:
+def validate_command(client_socket: socket.socket, command: str, file: str | None) -> bool:
     if file:
-        user_input = input(f"Are you sure you want to {command[1:]} {file}? [Y/n] ")
+        file_type = comm_utils.receive_text(client_socket)
+        if file_type == "dir":
+            user_input = input(f"{file} is a directory. Are you sure you want to {command[1:]} it? [Y/n] ")
+        else:
+            user_input = input(f"Are you sure you want to {command[1:]} {file}? [Y/n] ")
+        if not user_input or user_input[0].lower() == "y":
+            comm_utils.send_text(client_socket, "y")
+        else:
+            comm_utils.send_text(client_socket, "n")
     else:
         user_input = input(f"Are you sure you want to {command[1:]}? [Y/n] ")
 
