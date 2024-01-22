@@ -41,7 +41,13 @@ def send_file(client_socket: socket.socket, file_path: str):
     for i in range(0, len(encoded_file), CHUNK_SIZE):
         package = encoded_file[i : i + CHUNK_SIZE]
         client_socket.send(package)
-    f_utils.delete_file(file_path)
+
+    if file_path.endswith(".tar.gz"):
+        f_utils.delete_file(file_path)
+        file_path = file_path[:-7]  # Removes the ".tar.gz" from the name
+        print(f"Directory '{file_path}' sended successfully.")
+    else:
+        print(f"File '{file_path}' sended successfully.")
 
 
 def receive_file(client_socket: socket.socket, file_path: str | None):
