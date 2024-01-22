@@ -35,13 +35,13 @@ while True:
         case "/list" | "/ls":
             dir_list = f_utils.list_content(arg1)
             comm_utils.send_text(client_socket, dir_list)
-            print(f"I listed a directory for client {client_address} normally.")
+            print(f"Listed a directory for client {client_address}.")
         case "/tree":
             tree_list = f_utils.tree_list_content(arg1)
             comm_utils.send_text(client_socket, tree_list)
-            print(f"I listed a directory for client {client_address} as a tree.")
+            print(f"Listed a directory for client {client_address} as a tree.")
         case "/exit":
-            print(f"Client {client_address} exited from server.")
+            print(f"Client {client_address} closed the connection with the server.")
             break
         case "/upload":
             file_path = os.path.join(HOME_DIR, arg1) if arg1 else HOME_DIR
@@ -55,16 +55,15 @@ while True:
             if sv_utils.confirm_filetype_with_client(client_socket, file_path):
                 try:
                     comm_utils.send_file(client_socket, file_path)
-                    print("I sent a file!")
                 except ValueError as e:
                     comm_utils.send_text(client_socket, f"{e}")
         case "/delete":
             file_path = os.path.join(HOME_DIR, arg1)
             if sv_utils.confirm_filetype_with_client(client_socket, file_path):
                 try:
-                    f_utils.delete_file(arg1)
+                    f_utils.delete_file(file_path)
                     comm_utils.send_text(client_socket, f"{arg1} deleted successfully.")
-                    print(f"I deleted a file. (Requested from client {client_address})")
+                    print(f"Deleted the file {arg1}. (Requested from client {client_address})")
                 except ValueError as e:
                     comm_utils.send_text(client_socket, f"{e}")
         case "/cd":
