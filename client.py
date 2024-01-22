@@ -1,7 +1,7 @@
 import socket
 
-import client_module as cm
-import server_module as sm
+import client_utils as cl_utils
+import communication_utils as comm_utils
 
 # Server configuration
 host = "192.168.1.4"
@@ -25,23 +25,62 @@ while True:
 
     match command_type:
         case "/help":
-            cm.print_help()
+            cl_utils.print_help()
         case "/exit":
-            cm.send_request(client_socket, command_type, None)
-            break
+            confirmation = cl_utils.validate_command(command_type, None)
+            if confirmation:
+                cl_utils.send_request(client_socket, command_type, None)
+                break
         case "/list" | "/ls" | "/tree":
-            cm.send_request(client_socket, command_type, arg1)
-            message = sm.receive_text(client_socket)
+            cl_utils.send_request(client_socket, command_type, arg1)
+            message = comm_utils.receive_text(client_socket)
             print(message)
         case "/upload":
             if arg1:
-                cm.send_request(client_socket, command_type, arg2)
-                sm.send_file(client_socket, arg1)
+                if cl_utils.validate_command(command_type, arg1):
+                    cl_utils.send_request(client_socket, command_type, arg2)
+                    file_type = comm_utils.receive_text(client_socket)
+                    if file_type == "dir":
+                        if cl_utils.validate_dir_action(command_type):
+                            comm_utils.send_text(client_socket, "y")
+                            comm_utils.send_file(client_socket, arg1)
+                    else:
+                        comm_utils.send_text(client_socket, "y")
+                        comm_utils.send_file(client_socket, arg1)
+            else:
+                print("Error: No file specified to be uploaded.")
         case "/download":
-            cm.send_request(client_socket, command_type, arg1)
-            sm.receive_file(client_socket, arg2)
-        case "/delete" | "/cd":
-            cm.send_request(client_socket, command_type, arg1)
+            if arg1:
+                if cl_utils.validate_command(command_type, arg1):
+                    cl_utils.send_request(client_socket, command_type, arg1)
+                    file_type = comm_utils.receive_text(client_socket)
+                    if file_type == "dir":
+                        if cl_utils.validate_dir_action(command_type):
+                            comm_utils.send_text(client_socket, "y")
+                            comm_utils.receive_file(client_socket, arg2)
+                    else:
+                        comm_utils.send_text(client_socket, "y")
+                        comm_utils.receive_file(client_socket, arg2)
+            else:
+                print("Error: No file specified to be downloaded.")
+        case "/delete":
+            if arg1:
+                if cl_utils.validate_command(command_type, arg1):
+                    cl_utils.send_request(client_socket, command_type, arg1)
+                    file_type = comm_utils.receive_text(client_socket)
+                    if file_type == "dir":
+                        if cl_utils.validate_dir_action(command_type):
+                            comm_utils.send_text(client_socket, "y")
+                        else:
+                            comm_utils.send_text(client_socket, "n")
+                    else:
+                        comm_utils.send_text(client_socket, "y")
+            else:
+                print("Error: No file specified to be deleted.")
+        case  "/cd":
+            cl_utils.send_request(client_socket, command_type, arg1)
+            answer = comm_utils.receive_text(client_socket)
+            print(answer)
         case None:
             print("Error: Empty command.")
 

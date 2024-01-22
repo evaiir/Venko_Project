@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import socket
 from pathlib import Path
 from typing import Dict
@@ -79,24 +80,22 @@ def file_encode(file_path: str) -> bytes:
 
 def get_file_metadata(client_socket: socket.socket) -> Dict:
     """
-    Receives the file name and both length informations from the buffer and return them to the function,
-    so the caller can handle the file binaries.
+    Receives metadata from the socket as JSON, decodes it to a Python dictionary,
+    and returns it to the caller.
     """
-    dict_len_b = client_socket.recv(4)
-    dict_len = int.from_bytes(dict_len_b)
-    print(f"DICT TESTE: {dict_len}")
+    metadata_length_bytes = client_socket.recv(4)
+    metadata_length = int.from_bytes(metadata_length_bytes)
 
-    encoded_file = client_socket.recv(dict_len)
-    print(encoded_file)
-    file_metadata = json.loads(encoded_file)
+    metadata_bytes = client_socket.recv(metadata_length)
+    file_metadata = json.loads(metadata_bytes)
 
     return file_metadata
 
 
 def text_message_encode(message: str) -> bytes:
     """
-    Receives a string and returns its length and the encoded string to the caller can handle sending
-    text through the network.
+    Receives a string and returns its length along with the encoded string,
+    allowing the caller to handle sending text through the socket.
     """
     message_bytes = message.encode("utf-8")
     text_len = len(message_bytes)
@@ -105,3 +104,10 @@ def text_message_encode(message: str) -> bytes:
     binary_data += message_bytes
 
     return binary_data
+
+
+def delete_file(file_path: str):
+    if os.path.isdir(file_path):
+        shutil.rmtree(file_path)
+    else:
+        os.remove(file_path)

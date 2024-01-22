@@ -1,6 +1,6 @@
 import socket
 
-import file_handling_module as fhm
+import file_utils as f_utils
 
 
 def print_help():
@@ -27,14 +27,41 @@ def print_help():
         + "\t- Get a copy of a file from the server."
     )
     print("/delete <server_file_path>\n\t- Delete a file from the server.")
-    print("/cd <directory>\n\t- Change current directory on the server.")
+    print(
+        "/cd <subdirectory>\n\t- Change current directory on the server."
+        + "\n\t- Empty argument will go back to the main directory."
+    )
     print("/exit\n\t- Close the connection to the server.")
     print()
 
 
 def send_request(client_socket: socket.socket, command: str, opt_arg: str | None):
+    """
+    Send a string to the server. It may be a command or a command and arguments.
+    """
     message = command
     if opt_arg:
         message += " " + opt_arg
-    package = fhm.text_message_encode(message)
+    package = f_utils.text_message_encode(message)
     client_socket.sendall(package)
+
+
+def validate_command(command: str, file: str | None) -> bool:
+    if file:
+        user_input = input(f"Are you sure you want to {command[1:]} {file}? [Y/n] ")
+    else:
+        user_input = input(f"Are you sure you want to {command[1:]}? [Y/n] ")
+
+    if not user_input:
+        return True
+    return user_input[0].lower() == "y"
+
+
+def validate_dir_action(command: str) -> bool:
+    user_input = input(
+        f"The selected file is a directory. Do you want to {command[1:]} the whole directory? [Y/n] "
+    )
+
+    if not user_input:
+        return True
+    return user_input[0].lower() == "y"
