@@ -12,13 +12,6 @@ def receive_request(client_socket: socket.socket) -> list:
     return request.split()
 
 
-def delete_file(file_path: str):
-    if os.path.isdir(file_path):
-        shutil.rmtree(file_path)
-    else:
-        os.remove(file_path)
-
-
 def change_directory(file_path: str):
     if os.path.isdir(file_path):
         os.chdir(file_path)
