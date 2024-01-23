@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 INT_SIZE = 4
+ENCODING_FORMAT = "utf-8"
 
 
 def tree_list_content(directory: str) -> str:
@@ -67,10 +68,12 @@ def file_encode(file_path: str, file_compressed: bool) -> bytes:
         with open(file_path, "rb") as file:
             file_data = file.read()
     except PermissionError:
-        raise PermissionError(f"You don't have permission to read {file_info['file_name']}.")
+        raise PermissionError(
+            f"You don't have permission to read {file_info['file_name']}."
+        )
 
     file_info["file_len"] = len(file_data)
-    metadata_bytes = json.dumps(file_info).encode("utf-8")
+    metadata_bytes = json.dumps(file_info).encode(ENCODING_FORMAT)
     metadata_length_bytes = len(metadata_bytes).to_bytes(INT_SIZE)
     encoded_file = metadata_length_bytes + metadata_bytes + file_data
 
@@ -96,7 +99,7 @@ def text_message_encode(message: str) -> bytes:
     Receives a string and returns its length along with the encoded string,
     allowing the caller to handle sending text through the socket.
     """
-    message_bytes = message.encode("utf-8")
+    message_bytes = message.encode(ENCODING_FORMAT)
     text_len = len(message_bytes)
 
     binary_data = text_len.to_bytes(INT_SIZE)
@@ -120,4 +123,6 @@ def delete_file(file_path: str):
     except FileNotFoundError:
         raise FileNotFoundError(f"Error: {file_path} was not found.")
     except PermissionError:
-        raise PermissionError(f"Error: You don't have permission to delete {file_path}.")
+        raise PermissionError(
+            f"Error: You don't have permission to delete {file_path}."
+        )
