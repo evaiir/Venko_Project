@@ -3,10 +3,13 @@ import os
 import shutil
 import socket
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
+
+INT_SIZE = 4
 
 
 def tree_list_content(directory: str) -> str:
+    """Mimics the output of the 'tree' command from the terminal. Return it as a string."""
     directory = os.path.expanduser(directory or ".")
 
     # Tree function lightly adapted from https://stackoverflow.com/a/59109706
@@ -42,9 +45,7 @@ def tree_list_content(directory: str) -> str:
 
 
 def list_content(directory: str) -> str:
-    """
-    Mimics the output of the 'ls' command from the terminal. Return it as a string.
-    """
+    """Mimics the output of the 'ls' command from the terminal. Return it as a string."""
     directory = os.path.expanduser(directory or ".")
     string = ""
     for line in os.listdir(directory):
@@ -52,38 +53,36 @@ def list_content(directory: str) -> str:
     return string
 
 
-def file_encode(file_path: str) -> bytes:
+def file_encode(file_path: str, file_compressed: bool) -> bytes:
     """
     Receives a file with full path and returns a binary containing the length of the file name, the file
     name, the length of the file and the file concatenated.
     """
     file_info = {}
+    file_info["is_compressed"] = file_compressed
     file_info["file_name"] = os.path.basename(file_path)
     file_info["permissions"] = os.stat(file_path).st_mode
 
     try:
-        file = open(file_path, "rb")
-    except PermissionError:
-        print(f"You don't have permission to read {file_info['file_name']}.")
-        raise
-    else:
-        with file:
+        with open(file_path, "rb") as file:
             file_data = file.read()
+    except PermissionError:
+        raise PermissionError(f"You don't have permission to read {file_info['file_name']}.")
 
     file_info["file_len"] = len(file_data)
     metadata_bytes = json.dumps(file_info).encode("utf-8")
-    metadata_length_bytes = len(metadata_bytes).to_bytes(4)
+    metadata_length_bytes = len(metadata_bytes).to_bytes(INT_SIZE)
     encoded_file = metadata_length_bytes + metadata_bytes + file_data
 
     return encoded_file
 
 
-def get_file_metadata(client_socket: socket.socket) -> Dict:
+def get_file_metadata(client_socket: socket.socket) -> Dict[str, Any]:
     """
     Receives metadata from the socket as JSON, decodes it to a Python dictionary,
     and returns it to the caller.
     """
-    metadata_length_bytes = client_socket.recv(4)
+    metadata_length_bytes = client_socket.recv(INT_SIZE)
     metadata_length = int.from_bytes(metadata_length_bytes)
 
     metadata_bytes = client_socket.recv(metadata_length)
@@ -100,14 +99,25 @@ def text_message_encode(message: str) -> bytes:
     message_bytes = message.encode("utf-8")
     text_len = len(message_bytes)
 
-    binary_data = text_len.to_bytes(4)
+    binary_data = text_len.to_bytes(INT_SIZE)
     binary_data += message_bytes
 
     return binary_data
 
 
 def delete_file(file_path: str):
-    if os.path.isdir(file_path):
-        shutil.rmtree(file_path)
-    else:
-        os.remove(file_path)
+    """
+    Delete a file from the server.
+
+    The function can also delete a directory.
+    All validation was made before calling this function.
+    """
+    try:
+        if os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+        else:
+            os.remove(file_path)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Error: {file_path} was not found.")
+    except PermissionError:
+        raise PermissionError(f"Error: You don't have permission to delete {file_path}.")
