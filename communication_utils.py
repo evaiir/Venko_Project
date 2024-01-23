@@ -4,9 +4,9 @@ import tarfile
 import time
 
 import file_utils as f_utils
+from file_utils import ENCODING_FORMAT, INT_SIZE
 
 CHUNK_SIZE = 1024
-INT_SIZE = 4
 
 
 def send_text(client_socket: socket.socket, message: str):
@@ -31,7 +31,7 @@ def receive_text(client_socket: socket.socket) -> str:
         message += package
         length -= len(package)
 
-    return message.decode("utf-8")
+    return message.decode(ENCODING_FORMAT)
 
 
 def send_file(client_socket: socket.socket, file_path: str):
