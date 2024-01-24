@@ -6,10 +6,12 @@ import server_utils as sv_utils
 
 dtprint = comm_utils.timestamped_print
 
+# Just limits the socket.listen() function. The server can still handle more clients simultaniously.
 MAX_CLIENTS = 5
 
+dtprint(f"Booting up the server. To exit from server press CTRL+C on the keyboard.")
 # Server configuration.
-host = str(socket.INADDR_ANY)  # Bind to any interface
+host = socket.gethostbyname(socket.gethostname())
 port = 8080
 
 # Create a socket object.
@@ -20,7 +22,7 @@ server_socket.bind((host, port))
 
 # Listen for incoming connections.
 server_socket.listen(MAX_CLIENTS)
-dtprint(f"Server listening on any interface on port {port}")
+dtprint(f"Server listening on ip {host} and port {port}")
 
 threads = []
 
