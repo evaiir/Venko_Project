@@ -14,7 +14,7 @@ dtprint(f"Booting up the server. To exit from server press CTRL+C on the keyboar
 host = socket.gethostbyname(socket.gethostname())
 port = 8080
 
-# Create a socket object.
+# Create a socket object. The server_socket is specified as a stream socket with IPv4
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to a specific address and port.
@@ -25,7 +25,6 @@ server_socket.listen(MAX_CLIENTS)
 dtprint(f"Server listening on ip {host} and port {port}")
 
 threads = []
-
 try:
     while True:
         # Accept a connection.
