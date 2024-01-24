@@ -27,7 +27,6 @@ threads = []
 try:
     while True:
         connected_clients = len(threads)
-        print(f"QTD CLIENT: {connected_clients}")
         if connected_clients < MAX_CLIENTS:
             # Accept a connection.
             client_socket, client_address = server_socket.accept()
