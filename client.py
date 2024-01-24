@@ -1,4 +1,5 @@
 import socket
+import os
 
 import client_utils as cl_utils
 import communication_utils as comm_utils
@@ -58,11 +59,12 @@ while True:
 
             case "/upload":
                 if arg1:
+                    full_path = os.path.abspath(os.path.expanduser(arg1))
                     dtprint("Requesting an upload to the server.")
                     cl_utils.send_request(client_socket, command_type, arg2)
-                    if cl_utils.validate_command(client_socket, command_type, arg1):
+                    if cl_utils.validate_command(client_socket, command_type, full_path):
                         dtprint("Sending a file to the server.")
-                        comm_utils.send_file(client_socket, arg1)
+                        comm_utils.send_file(client_socket, full_path)
                 else:
                     cl_utils.send_request(client_socket, "missarg", None)
                     dtprint("Error: No file specified to be uploaded.")
