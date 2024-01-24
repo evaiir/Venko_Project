@@ -49,6 +49,7 @@ def handle_client(client_socket: socket.socket, client_address: tuple):
     """
     Function to handle each client connection in a separate thread.
     """
+    comm_utils.send_text(client_socket, "Connection accepted")
     dtprint(f"Connection from {client_address} accepted.")
 
     # Run the server requests until client exits.

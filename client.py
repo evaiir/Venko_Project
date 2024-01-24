@@ -16,9 +16,14 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Connect to the server
 client_socket.connect((host, port))
 
-# Greet
-dtprint(f"Connected to {host}:{port}")
-print("Type /help to list the available operations.")
+connection_status = comm_utils.receive_text(client_socket)
+if connection_status.startswith("Connection rejected"):
+    dtprint(connection_status)
+    exit()
+else:
+    # Greet
+    dtprint(f"Connected to {host}:{port}")
+    print("Type /help to list the available operations.")
 
 # Send requests to the server until operation /exit is called.
 while True:

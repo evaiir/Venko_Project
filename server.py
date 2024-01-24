@@ -6,7 +6,6 @@ import server_utils as sv_utils
 
 dtprint = comm_utils.timestamped_print
 
-# Just limits the socket.listen() function. The server can still handle more clients simultaniously.
 MAX_CLIENTS = 5
 
 dtprint(f"Booting up the server. To exit from server press CTRL+C on the keyboard.")
@@ -27,18 +26,29 @@ dtprint(f"Server listening on ip {host} and port {port}")
 threads = []
 try:
     while True:
-        # Accept a connection.
-        client_socket, client_address = server_socket.accept()
+        connected_clients = len(threads)
+        print(f"QTD CLIENT: {connected_clients}")
+        if connected_clients < MAX_CLIENTS:
+            # Accept a connection.
+            client_socket, client_address = server_socket.accept()
 
-        # Create a new thread to handle the client
-        client_thread = threading.Thread(
-            target=sv_utils.handle_client, args=(client_socket, client_address)
-        )
-        client_thread.start()
-        threads.append(client_thread)
+            # Create a new thread to handle the client
+            client_thread = threading.Thread(
+                target=sv_utils.handle_client, args=(client_socket, client_address)
+            )
+            client_thread.start()
+            threads.append(client_thread)
 
-        # Remove finished threads
-        threads = [thread for thread in threads if thread.is_alive()]
+            # Remove finished threads
+            threads = [thread for thread in threads if thread.is_alive()]
+        else:
+            # Briefly accepts the connection.
+            client_socket, client_address = server_socket.accept()
+            dtprint(f"Connection refused from client {client_address} due to max capacity.")
+            warn = "Connection rejected: Server is at full capacity."
+            comm_utils.send_text(client_socket, warn)
+            client_socket.close()
+
 except KeyboardInterrupt:
     print()
     dtprint(
