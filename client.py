@@ -119,9 +119,14 @@ while True:
         cl_utils.send_request(client_socket, "/exit", None)
         if cl_utils.validate_command(client_socket, "/exit", None):
             break
+    except EOFError:
+        dtprint("Error: End of File reached unexpectedly. Finishing the program.")
+        exit()
     except OSError:
         oe = comm_utils.receive_text(client_socket)
         dtprint(oe)
+    except Exception as e:
+        dtprint(f"Error: Unexpected error occurred: {e}.")
 
 
 # Close the connection

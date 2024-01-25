@@ -55,6 +55,8 @@ except KeyboardInterrupt:
     )
     for thread in threads:
         thread.join()
+except Exception as e:
+    dtprint(f"Error: Unexpected error occurred: {e}.")
 
 dtprint("All clients have finished. Shutting down the server now.")
 server_socket.close()
