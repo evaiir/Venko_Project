@@ -7,6 +7,46 @@ are required. The available commands for clients include listing, downloading,
 and deleting files from the server, as well as uploading files to the server.
 All actions are performed within the terminal.
 
+## Client side usage
+
+The available commands for the client are:
+```
+/help
+  - Display these commands in the terminal.
+```
+```
+/list [<directory>] or /ls [<directory>]
+  - Display files in the specified directory.
+```
+```
+/tree [<directory>]
+  - Display files in the specified directory in a tree shape. It also displays the content of every subdirectory recursively.
+```
+```
+/upload <local_file_path> [<server_directory>]
+  - Send a file to the server.
+```
+```
+/download <server_file_path> [<local_directory>]
+  - Get a copy of a file from the server.
+```
+```
+/delete <server_file_path>
+  - Delete a file from the server.
+```
+```
+/exit
+  - Close the connection to the server.
+```
+
+## Connection
+
+The connection between client and server is done through hardcoded IP and PORT.
+When a client tries to connect, the server briefly accepts the connection to
+tell the client about it's state. If the maximum capacity of the server has been
+reached (5 connections, for demonstration purposes), the connection will be
+refused and the program will be terminated in the client's side.
+
 ## Communication protocol
 
 The program uses two different communication methods:
